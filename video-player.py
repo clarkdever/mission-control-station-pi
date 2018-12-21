@@ -16,15 +16,15 @@ TODO:
 """
 
 #initialize all the things
-player1Path = '/dev/input/event4'
-player2Path = '/dev/input/event5'
+player1Path = '/dev/input/event5'
+player2Path = '/dev/input/event4'
 player1 = evdev.InputDevice(player1Path)
 player2 = evdev.InputDevice(player2Path)
-#p = mplayer.Player()
-#p.loadfile('sharks.mp4')
+p = mplayer.Player()
+p.loadfile('sharks.mp4')
 #p.fullscreen = True #make it fullscreen
 #p.ontop = True #place our video layer on top
-#p.pause()  #unpause the file, it loads paused
+p.pause()  #unpause the file, it loads paused
 #p.osdlevel = 0 #turn off on screen display
 #print('file name:', p.path, "\n", 'clip length:', p.length)
 
@@ -65,9 +65,11 @@ def on_press(device, event):
     try:
         if device.path == player1Path:
             if event.code == 298:
-                p.time_pos = p.time_pos - 10
+                print('scrub left:',p.time_pos)
+                p.time_pos = float(p.time_pos) - 10
             elif event.code == 299:
-                p.time_post = p.time_pos + 10
+                print('scrub right:',p.time_pos)
+                p.time_pos = float(p.time_pos) + 10
         else:
             print('Player 2')
         
