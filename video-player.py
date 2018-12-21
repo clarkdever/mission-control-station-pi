@@ -1,6 +1,6 @@
 from threading import Timer
-import mplayer
-from pynput import keyboard
+import mplayer, asyncio, evdev
+#from pynput import keyboard
 
 """
 Clark Dever - clarkdever@gmail.com
@@ -16,12 +16,16 @@ TODO:
 """
 
 #initialize all the things
-p = mplayer.Player()
-p.loadfile('sharks.mp4')
-p.fullscreen = True #make it fullscreen
-p.ontop = True #place our video layer on top
-p.pause()  #unpause the file, it loads paused
-p.osdlevel = 0 #turn off on screen display
+player1Path = '/dev/input/event4'
+player2Path = '/dev/input/event5'
+player1 = evdev.InputDevice(player1Path)
+player2 = evdev.InputDevice(player2Path)
+#p = mplayer.Player()
+#p.loadfile('sharks.mp4')
+#p.fullscreen = True #make it fullscreen
+#p.ontop = True #place our video layer on top
+#p.pause()  #unpause the file, it loads paused
+#p.osdlevel = 0 #turn off on screen display
 #print('file name:', p.path, "\n", 'clip length:', p.length)
 
 
@@ -51,71 +55,35 @@ def pause():
     except:
         print('Pause Failed')
         
-def on_press(key):
+def on_press(device, event):
     """
     executes program flow based on keypresses
+    print('length: ', p.length)
+    print('time_pos: ', p.time_pos)
+    print('percent_pos: ', p.percent_pos)
     """
     try:
-        if key.char=='a':
-            p.quit()
-            quit()
-        elif key.char=='s':
-            print('load sharks.mp4')
-            p.loadfile("sharks.mp4")
-            p.fullscreen = True
-        elif key.char=='d':
-            print('load sample.mp4')
-            p.loadfile("sample.mp4")
-            p.fullscreen = True
-        elif key.char=='f':
-            p.fullscreen = not p.fullscreen
-        elif key.char=='p':
-            print('toggle pause')
-            p.pause()
-        elif key.char=='z':
-            print('data dump')
-            print('path: ', p.path)
-            #print('stream_pos: ', p.stream_pos)
-            #print('stream_start: ', p.stream_start)
-            #print('stream_end: ', p.stream_end)
-            #print('stream_length: ', p.stream_length)
-            #print('stream_time_pos: ', p.stream_time_pos)
-            print('length: ', p.length)
-            print('time_pos: ', p.time_pos)
-            print('percent_pos: ', p.percent_pos)
-        elif key.char=='q':
-            print('Sharks!')
-            play_clip(5.75, 2)
-            #p.time_pos = 5.75
-        elif key.char=='w':
-            print('Tiger Shark!')
-            play_clip(20.55, 2)
-            #p.time_pos = 20.55
-        elif key.char=='e':
-            print('Blue Fin Shark!!')
-            #p.time_pos = 35
-            play_clip(35, 2)
-        elif key.char=='r':
-            print('Thresher Shark!')
-            #p.time_pos = 51
-            play_clip(51, 2)
+        if device.path == player1Path:
+            if event.code == 298:
+                p.time_pos = p.time_pos - 10
+            elif event.code == 299:
+                p.time_post = p.time_pos + 10
         else:
-            print('alphanumeric key {0} pressed'.format(
-                key.char))
+            print('Player 2')
+        
     except AttributeError:
         print('special key {0} pressed'.format(
-            key))
+            event.code))
 
-def on_release(key):
-    print('{0} released'.format(
-        key))
+async def print_events(device):
+    async for event in device.async_read_loop():
+        if event.type == evdev.ecodes.EV_KEY:
+            #print(evdev.categorize(event))
+            print(event.code, device.path)
+            on_press(device, event)
 
-    if key == keyboard.Key.esc:
-        # Stop listener so you can kill things from python console
-        return False
+for device in player1, player2:
+    asyncio.ensure_future(print_events(device))
 
-# Collect events until released by hitting ESC
-with keyboard.Listener(
-        on_press=on_press,
-        on_release=on_release) as listener:
-    listener.join()
+loop = asyncio.get_event_loop()
+loop.run_forever()
