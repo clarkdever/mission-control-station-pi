@@ -22,8 +22,8 @@ player1 = evdev.InputDevice(player1Path)
 player2 = evdev.InputDevice(player2Path)
 p = mplayer.Player()
 p.loadfile('ChildrensMCS.mp4')
-#p.fullscreen = True #make it fullscreen
-#p.ontop = True #place our video layer on top
+p.fullscreen = True #make it fullscreen
+p.ontop = True #place our video layer on top
 p.pause()  #unpause the file, it loads paused
 p.osdlevel = 0 #turn off on screen display
 #print('file name:', p.path, "\n", 'clip length:', p.length)
