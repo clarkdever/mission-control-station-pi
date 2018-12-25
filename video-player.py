@@ -16,15 +16,15 @@ TODO:
 """
 
 #initialize all the things
-player1Path = '/dev/input/event5'
-player2Path = '/dev/input/event2'
+player1Path = '/dev/input/event5' #Run button-mapper.py to figure out what stick is what event or ls /dev/input
+player2Path = '/dev/input/event4'
 player1 = evdev.InputDevice(player1Path)
 player2 = evdev.InputDevice(player2Path)
 p = mplayer.Player()
 p.loadfile('ChildrensMCS.mp4')
-p.fullscreen = True #make it fullscreen
-p.ontop = True #place our video layer on top
-p.pause()  #unpause the file, it loads paused
+#p.fullscreen = True #make it fullscreen
+#p.ontop = True #place our video layer on top
+#p.pause()  #unpause the file, it loads paused
 p.osdlevel = 0 #turn off on screen display
 #print('file name:', p.path, "\n", 'clip length:', p.length)
 
@@ -38,11 +38,15 @@ def play_clip(position, duration):
         if t is not None: #if a timer exists, cancel the timer before creating a new one
             t.cancel()
             t = Timer(duration, pause)
+            if(p.paused): #if video is paused, unpause
+                p.pause()
             p.time_pos = position
             t.start()
     except NameError: #this is the first time this method has been called, create a timer
         global t 
         t = Timer(duration, pause)
+        if(p.paused): #if video is paused, unpause
+            p.pause()
         p.time_pos = position
         t.start()
 
@@ -50,6 +54,7 @@ def play_clip(position, duration):
 def pause():
     """Pauses play"""
     try:
+        p.time_pos = 233
         p.pause()
         print('pause() fired by play_clip Timer')
     except:
@@ -63,8 +68,9 @@ def on_press(device, event):
     print('percent_pos: ', p.percent_pos)
     """
     try:
-        if device.path == player1Path: #Left Controllers
+        if device.path == player1Path and event.value == 1: #Left Controllers
             #Joystick
+            #event.value == 1 means On_Press
             if event.code == 298:
                 #Joystick Left
                 print('scrub left:',p.time_pos)
@@ -96,7 +102,7 @@ def on_press(device, event):
             elif event.code == 294:
                 #Right Shoulder - White
                 print('STS Launch')
-                play_clip(653, 136)
+                play_clip(654, 136)
             elif event.code == 289:
                 #Left Trigger - Black
                 print('STS Landing')
@@ -108,14 +114,14 @@ def on_press(device, event):
             elif event.code == 293:
                 #Red
                 print('Moon Rocks')
-                play_clip(944, 55)
+                play_clip(994, 55)
             elif event.code == 295:
                 #Right Trigger - Black
                 print('ISS')
                 play_clip(1049, 51)
             else:
                 print('Do Nothing')  
-        else: #right joysticks
+        elif  device.path == player2Path and event.value == 1: #right joysticks
             print('Player 2')
             if event.code == 299:
                 #Joystick Left
@@ -124,11 +130,11 @@ def on_press(device, event):
             elif event.code == 296:
                 #Joystick Right
                 print('Minions Babarang')
-                play_clip(1195, 39)
+                play_clip(1196, 39)
             elif event.code == 298:
                 #Joystick Up
                 print('Minions Happy')
-                play_clip(1234, 233)
+                play_clip(1235, 233)
             elif event.code == 297:
                 #Joystick Down
                 print('Moana You\'re Welcome')
@@ -166,7 +172,9 @@ def on_press(device, event):
                 print('Dad')
                 play_clip(3051, 15)
             else:
-                print('Do Nothing')  
+                print('Do Nothing')
+        else:
+            print('Some Other Device')
     except AttributeError:
         print('special key {0} pressed'.format(
         event.code))
