@@ -1,0 +1,13 @@
+[Unit]
+Description=Launches MCS jr!
+After=graphical.target
+
+[Service]
+ExecStart=/usr/bin/python3 -u mcs-jr.py
+WorkingDirectory=/home/pi/Documents
+Restart=always
+RestartSec=10s
+User=pi
+
+[Install]
+WantedBy=multi-user.target
